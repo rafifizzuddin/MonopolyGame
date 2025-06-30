@@ -13,16 +13,17 @@
       padding: 0;
     }
     #game-board {
-      display: grid;
-      grid-template-columns: repeat(11, 60px);
-      grid-template-rows: repeat(11, 60px);
-      gap: 2px;
-      width: 660px;
-      height: 660px;
-      background: white;
-      border: 4px solid #333;
-      margin: 10px;
+    display: grid;
+    grid-template-columns: repeat(11, var(--tile-size, 60px));
+    grid-template-rows: repeat(11, var(--tile-size, 60px));
+    gap: 2px;
+    width: calc(var(--tile-size, 60px) * 11);
+    height: calc(var(--tile-size, 60px) * 11);
+    background: white;
+    border: 4px solid #333;
+    margin: 10px;
     }
+
     .tile {
       border: 1px solid #ccc;
       background: #fff;
@@ -90,9 +91,36 @@
     #setup { margin-bottom: 20px; }
     #buy-property-btn { display: none; margin-bottom: 10px; }
     #turn-indicator { font-size: 22px; color: #222; margin-bottom: 20px; }
+
+    #header {
+    padding: 10px 20px;
+    background: #333;
+    color: white;
+    text-align: center;
+    }
+    #header h1 {
+    margin: 0 0 5px;
+    font-size: 24px;
+    }
+    #header label, #header select {
+    font-size: 16px;
+    }
+
   </style>
 </head>
 <body>
+
+    <div id="header">
+  <h1>🎲 Monopoli Web - v1.0</h1>
+  <label for="board-size">Ukuran Petak: </label>
+  <select id="board-size">
+    <option value="50">Kecil</option>
+    <option value="60" selected>Normal</option>
+    <option value="70">Besar</option>
+    <option value="80">Ekstra Besar</option>
+  </select>
+</div>
+
   <div id="game-board"></div>
   <div id="sidebar">
     <div id="setup">
@@ -115,13 +143,46 @@
 const turnIndicator = document.getElementById('turn-indicator');
 const propertyData = [...Array(40)].map((_, i) => {
   const data = [
-    [1,'Kuala Lumpur',60,4],[3,'Bangkok',60,2],[5,'Bandara Chang Ie',200,25],[6,'Singapura',100,6],
-    [8,'Manila',100,6],[9,'Seoul',120,8],[11,'Tokyo',140,10],[12,'PLN',150,10],[13,'Taipei',140,10],
-    [14,'Hong Kong',160,12],[15,'Bandara Narita',200,25],[16,'New Delhi',180,14],[18,'Riyadh',180,14],
-    [19,'Moskow',200,16],[21,'Beijing',220,18],[23,'Brazilia',220,18],[24,'London',240,20],
-    [25,'Bandara John F Kennedy',200,25],[26,'Amsterdam',260,22],[27,'Paris',260,22],[28,'PDAM',150,10],
-    [29,'Roma',280,24],[31,'Mexico City',300,26],[32,'Ottawa',300,26],[34,'Wasington',320,28],
-    [35,'Bandara Soekarno Hatta',200,25],[37,'Canberra',350,35],[39,'Jakarta',400,50]
+    [0, 'Start', 0, 0],
+    [1, 'Kuala Lumpur', 60, 4],
+    [2, 'Dana Umum', 0, 0],
+    [3, 'Bangkok', 60, 2],
+    [4, 'Pajak Income', 0, 0],
+    [5, 'Bandara Chang Ie', 200, 25],
+    [6, 'Singapura', 100, 6],
+    [7, 'Kesempatan', 0, 0],
+    [8, 'Manila', 100, 6],
+    [9, 'Seoul', 120, 8],
+    [10, 'Penjara / Hanya Kunjungan', 0, 0],
+    [11, 'Tokyo', 140, 10],
+    [12, 'PLN', 150, 10],
+    [13, 'Taipei', 140, 10],
+    [14, 'Hong Kong', 160, 12],
+    [15, 'Bandara Narita', 200, 25],
+    [16, 'New Delhi', 180, 14],
+    [17, 'Dana Umum', 0, 0],
+    [18, 'Riyadh', 180, 14],
+    [19, 'Moskow', 200, 16],
+    [20, 'Parkir Bebas', 0, 0],
+    [21, 'Beijing', 220, 18],
+    [22, 'Kesempatan', 0, 0],
+    [23, 'Brazilia', 220, 18],
+    [24, 'London', 240, 20],
+    [25, 'Bandara John F Kennedy', 200, 25],
+    [26, 'Amsterdam', 260, 22],
+    [27, 'Paris', 260, 22],
+    [28, 'PDAM', 150, 10],
+    [29, 'Roma', 280, 24],
+    [30, 'Masuk Penjara', 0, 0],
+    [31, 'Mexico City', 300, 26],
+    [32, 'Ottawa', 300, 26],
+    [33, 'Dana Umum', 0, 0],
+    [34, 'Washington', 320, 28],
+    [35, 'Bandara Soekarno Hatta', 200, 25],
+    [36, 'Kesempatan', 0, 0],
+    [37, 'Canberra', 350, 35],
+    [38, 'Pajak Jalan', 0, 0],
+    [39, 'Jakarta', 400, 50]
   ];
   const found = data.find(d => d[0] === i);
   return found ? { index: i, name: found[1], price: found[2], rent: found[3] } : null;
@@ -217,24 +278,26 @@ function createBoard() {
     const tileObj = {
       index: i,
       element: tile,
-      name: prop ? prop.name : 'Petak ' + i,
+      name: prop ? prop.name : '',
       price: prop?.price || null,
       rent: prop?.rent || null,
       owner: null
     };
-    const label = document.createElement('span');
-    label.innerText = (i === 0) ? 'Start' : tileObj.name;
-    tile.appendChild(label);
-    if (i === 0) tile.classList.add('start-tile');
+
+    // Hapus label judul (tidak ditambahkan apa-apa)
+    // if (i === 0) tile.classList.add('start-tile');
+
     if (i >= 1 && i <= 39) {
       const img = document.createElement('img');
       img.src = `img/tile_${i}.png`;
-      img.alt = `Petak ${i}`;
+      img.alt = tileObj.name;
       tile.appendChild(img);
     }
+
     tiles.push(tileObj);
   }
 }
+
 function updateBoard() {
   tiles.forEach(t => {
     t.element.querySelectorAll('.player-token').forEach(el => el.remove());
@@ -291,7 +354,7 @@ function movePlayerStepByStep(player, steps, onComplete) {
       clearInterval(interval);
       onComplete();
     }
-  }, 650);  // ubah 300 jadi lebih kecil/besar untuk kecepatan animasi
+  }, 500);  // ubah 300 jadi lebih kecil/besar untuk kecepatan animasi
 }
 
 
@@ -383,6 +446,13 @@ function executeCard(player, deckName) {
   updatePlayersInfo();
   updateBoard();
 }
+
+const boardSizeSelector = document.getElementById('board-size');
+boardSizeSelector.addEventListener('change', () => {
+  const size = boardSizeSelector.value;
+  document.documentElement.style.setProperty('--tile-size', `${size}px`);
+});
+
 
 </script>
 </body>
