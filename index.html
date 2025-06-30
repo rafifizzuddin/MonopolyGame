@@ -121,7 +121,7 @@
 <body>
 
     <div id="header">
-        <h1>🎲 Monopoli Web - v1.15</h1>
+        <h1>🎲 Monopoli Web - v1.0</h1>
         <label for="board-size">Ukuran Petak: </label>
             <select id="board-size">
                 <option value="50">Kecil</option>
@@ -262,14 +262,19 @@ function log(text) {
   p.textContent = text;
   logBox.prepend(p);
 }
+
 function updatePlayersInfo() {
   playersInfo.innerHTML = '';
   players.forEach(player => {
     const div = document.createElement('div');
-    div.innerHTML = `👤 ${player.name} - 💰 $${player.money} - 📍 Posisi ${player.position}`;
+
+    // tambahkan span untuk logo pemain dengan warna sesuai pion
+    div.innerHTML = `<span style="display:inline-block; width:14px; height:14px; border-radius:50%; background-color:${player.color}; margin-right:5px;"></span> ${player.name} - 💰 $${player.money} - 📍 Posisi ${player.position}`;
+
     playersInfo.appendChild(div);
   });
 }
+
 function createBoard() {
   const size = 11;
   const order = [];
