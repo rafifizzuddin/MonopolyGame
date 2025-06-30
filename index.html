@@ -127,6 +127,43 @@ const propertyData = [...Array(40)].map((_, i) => {
   return found ? { index: i, name: found[1], price: found[2], rent: found[3] } : null;
 });
 
+const chanceCards = [
+  { text: 'Majulah ke “Start” (Ambil $200)', action: (player) => { player.position = 0; player.money += 200; log(`${player.name} maju ke Start dan mendapat $200`); } },
+  { text: 'Majulah ke jalan tertentu', action: (player) => { player.position = 24; log(`${player.name} maju ke London!`); } },
+  { text: 'Majulah ke Stasiun terdekat', action: (player) => { player.position = 5; log(`${player.name} maju ke Bandara terdekat!`); } },
+  { text: 'Majulah ke Utilitas terdekat', action: (player) => { player.position = 12; log(`${player.name} maju ke PLN!`); } },
+  { text: 'Kembali 3 langkah', action: (player) => { player.position = (player.position - 3 + tiles.length) % tiles.length; log(`${player.name} mundur 3 langkah!`); } },
+  { text: 'Kena Denda Perbaikan: $25 per rumah, $100 per hotel', action: (player) => { player.money -= 100; log(`${player.name} bayar $100 untuk perbaikan!`); } },
+  { text: 'Denda Pajak $15', action: (player) => { player.money -= 15; log(`${player.name} bayar denda pajak $15!`); } },
+  { text: 'Ambil $50 dari bank', action: (player) => { player.money += 50; log(`${player.name} dapat $50 dari bank!`); } },
+  { text: 'Bank membayar dividen $50', action: (player) => { player.money += 50; log(`${player.name} dapat dividen $50!`); } },
+  { text: 'Bebas Penjara', action: (player) => { player.getOutOfJail = true; log(`${player.name} mendapat kartu Bebas Penjara!`); } },
+  { text: 'Masuk Penjara langsung', action: (player) => { player.position = 10; log(`${player.name} masuk Penjara!`); } },
+  { text: 'Majulah ke Boardwalk', action: (player) => { player.position = 39; log(`${player.name} maju ke Jakarta!`); } },
+  { text: 'Majulah ke Illinois Avenue', action: (player) => { player.position = 24; log(`${player.name} maju ke London!`); } },
+  { text: 'Majulah ke Reading Railroad', action: (player) => { player.position = 5; log(`${player.name} maju ke Bandara Chang Ie!`); } },
+  { text: 'Majulah ke Lapangan Umum', action: (player) => { player.position = 10; log(`${player.name} hanya berkunjung ke Penjara!`); } }
+];
+
+const communityChestCards = [
+  { text: 'Majulah ke “Start” (Ambil $200)', action: (player) => { player.position = 0; player.money += 200; log(`${player.name} maju ke Start dan mendapat $200`); } },
+  { text: 'Terima Hadiah Ulang Tahun $10 dari tiap pemain', action: (player) => { player.money += 10 * (players.length - 1); log(`${player.name} dapat $10 dari semua pemain!`); } },
+  { text: 'Terima Warisan $100', action: (player) => { player.money += 100; log(`${player.name} dapat warisan $100!`); } },
+  { text: 'Biaya Rumah Sakit $100', action: (player) => { player.money -= 100; log(`${player.name} bayar $100 biaya rumah sakit!`); } },
+  { text: 'Biaya Dokter $50', action: (player) => { player.money -= 50; log(`${player.name} bayar $50 ke dokter!`); } },
+  { text: 'Bayar Denda Sekolah $150', action: (player) => { player.money -= 150; log(`${player.name} bayar denda sekolah $150!`); } },
+  { text: 'Ambil $200 dari Bank', action: (player) => { player.money += 200; log(`${player.name} dapat $200 dari bank!`); } },
+  { text: 'Kena Pajak $100', action: (player) => { player.money -= 100; log(`${player.name} bayar pajak $100!`); } },
+  { text: 'Denda Pajak $20', action: (player) => { player.money -= 20; log(`${player.name} bayar denda pajak $20!`); } },
+  { text: 'Bebas Penjara', action: (player) => { player.getOutOfJail = true; log(`${player.name} mendapat kartu Bebas Penjara!`); } },
+  { text: 'Masuk Penjara langsung', action: (player) => { player.position = 10; log(`${player.name} masuk Penjara!`); } },
+  { text: 'Ambil $25 dari Bank', action: (player) => { player.money += 25; log(`${player.name} dapat $25 dari bank!`); } },
+  { text: 'Dapat pengembalian asuransi $100', action: (player) => { player.money += 100; log(`${player.name} dapat pengembalian asuransi $100!`); } },
+  { text: 'Dapat uang lomba kecantikan $10', action: (player) => { player.money += 10; log(`${player.name} menang lomba kecantikan $10!`); } },
+  { text: 'Bank salah hitung, terima $200', action: (player) => { player.money += 200; log(`${player.name} dapat $200 dari bank!`); } },
+  { text: 'Biaya pemeliharaan rumah $40/rumah, $115/hotel', action: (player) => { player.money -= 100; log(`${player.name} bayar $100 biaya pemeliharaan!`); } }
+];
+
 const gameBoard = document.getElementById('game-board');
 const playersInfo = document.getElementById('players-info');
 const rollDiceBtn = document.getElementById('roll-dice-btn');
@@ -255,6 +292,14 @@ function rollDice() {
   }
   const tile = tiles[player.position];
   log(`${player.name} mendarat di ${tile.name}`);
+  
+  if (player.position === 7 || player.position === 22 || player.position === 36) {
+  executeCard(player, 'chance');
+}
+if (player.position === 2 || player.position === 17 || player.position === 33) {
+  executeCard(player, 'community');
+}
+
   if (player.position === 4) {
     player.money -= 200;
     log(`${player.name} terkena Pajak dan kehilangan $200`);
@@ -294,6 +339,23 @@ rollDiceBtn.addEventListener('click', rollDice);
 startGameBtn.addEventListener('click', startGame);
 buyBtn.addEventListener('click', buyProperty);
 createBoard();
+
+// ini bagian kartu kesempatan dan dana umum //
+
+function drawCard(deck) {
+  const randomIndex = Math.floor(Math.random() * deck.length);
+  return deck[randomIndex];
+}
+
+function executeCard(player, deckName) {
+  const deck = deckName === 'chance' ? chanceCards : communityChestCards;
+  const card = drawCard(deck);
+  log(`📜 Kartu ${deckName === 'chance' ? 'Kesempatan' : 'Dana Umum'}: ${card.text}`);
+  card.action(player);
+  updatePlayersInfo();
+  updateBoard();
+}
+
 </script>
 </body>
 </html>
