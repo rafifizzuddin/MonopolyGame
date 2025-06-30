@@ -279,45 +279,73 @@ function buyProperty() {
   showPropertyInfo(tile, player);
   buyBtn.style.display = 'none';
 }
+
+function movePlayerStepByStep(player, steps, onComplete) {
+  let moved = 0;
+  const interval = setInterval(() => {
+    player.position = (player.position + 1) % tiles.length;
+    updateBoard();
+
+    moved++;
+    if (moved >= steps) {
+      clearInterval(interval);
+      onComplete();
+    }
+  }, 650);  // ubah 300 jadi lebih kecil/besar untuk kecepatan animasi
+}
+
+
 function rollDice() {
   activePlayerIndex = currentPlayer;
   const player = players[activePlayerIndex];
   const roll = Math.floor(Math.random() * 6) + 1;
   diceResult.textContent = `🎲 Dadu: ${roll}`;
   const prevPos = player.position;
-  player.position = (player.position + roll) % tiles.length;
-  if (player.position < prevPos) {
-    player.money += 200;
-    log(`${player.name} lewat START dan mendapat $200!`);
-  }
-  const tile = tiles[player.position];
-  log(`${player.name} mendarat di ${tile.name}`);
-  
-  if (player.position === 7 || player.position === 22 || player.position === 36) {
-  executeCard(player, 'chance');
-}
-if (player.position === 2 || player.position === 17 || player.position === 33) {
-  executeCard(player, 'community');
+
+  movePlayerStepByStep(player, roll, () => {
+    // Lewat START
+    if (player.position < prevPos) {
+      player.money += 200;
+      log(`${player.name} lewat START dan mendapat $200!`);
+    }
+
+    const tile = tiles[player.position];
+    log(`${player.name} mendarat di ${tile.name}`);
+
+    // Cek kartu Kesempatan/Dana Umum
+    if ([7, 22, 36].includes(player.position)) {
+      executeCard(player, 'chance');
+    }
+    if ([2, 17, 33].includes(player.position)) {
+      executeCard(player, 'community');
+    }
+
+    // Cek pajak
+    if (player.position === 4) {
+      player.money -= 200;
+      log(`${player.name} terkena Pajak dan kehilangan $200`);
+    } else if (player.position === 38) {
+      player.money -= 100;
+      log(`${player.name} terkena Pajak Jalan dan kehilangan $100`);
+    }
+
+    // Cek sewa
+    if (tile.owner && tile.owner !== player) {
+      player.money -= tile.rent;
+      tile.owner.money += tile.rent;
+      log(`${player.name} membayar $${tile.rent} ke ${tile.owner.name}`);
+    }
+
+    showPropertyInfo(tile, player);
+    updatePlayersInfo();
+    updateBoard();
+    updateTurnIndicator();
+
+    // Ganti giliran
+    currentPlayer = (currentPlayer + 1) % players.length;
+  });
 }
 
-  if (player.position === 4) {
-    player.money -= 200;
-    log(`${player.name} terkena Pajak dan kehilangan $200`);
-  } else if (player.position === 38) {
-    player.money -= 100;
-    log(`${player.name} terkena Pajak Jalan dan kehilangan $100`);
-  }
-  if (tile.owner && tile.owner !== player) {
-    player.money -= tile.rent;
-    tile.owner.money += tile.rent;
-    log(`${player.name} membayar $${tile.rent} ke ${tile.owner.name}`);
-  }
-  showPropertyInfo(tile, player);
-  updatePlayersInfo();
-  updateBoard();
-  updateTurnIndicator();
-  currentPlayer = (currentPlayer + 1) % players.length;
-}
 function startGame() {
   const count = parseInt(playerCountInput.value);
   if (count < 2 || count > 6) {
