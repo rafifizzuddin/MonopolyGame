@@ -106,20 +106,31 @@
     font-size: 16px;
     }
 
+    #fullscreen-btn {
+    margin-left: 10px;
+    font-size: 14px;
+    padding: 6px 10px;
+    cursor: pointer;
+    }
+
+
   </style>
 </head>
 <body>
 
     <div id="header">
-  <h1>🎲 Monopoli Web - v1.0</h1>
-  <label for="board-size">Ukuran Petak: </label>
-  <select id="board-size">
-    <option value="50">Kecil</option>
-    <option value="60" selected>Normal</option>
-    <option value="70">Besar</option>
-    <option value="80">Ekstra Besar</option>
-  </select>
-</div>
+        <h1>🎲 Monopoli Web - v1.0</h1>
+        <label for="board-size">Ukuran Petak: </label>
+            <select id="board-size">
+                <option value="50">Kecil</option>
+                <option value="60" selected>Normal</option>
+                <option value="70">Besar</option>
+                <option value="80">Ekstra Besar</option>
+            </select>
+        <br>
+        <br>
+        <button id="fullscreen-btn">🔳 Fullscreen</button>
+    </div>
 
   <div id="game-board"></div>
   <div id="sidebar">
@@ -451,6 +462,17 @@ const boardSizeSelector = document.getElementById('board-size');
 boardSizeSelector.addEventListener('change', () => {
   const size = boardSizeSelector.value;
   document.documentElement.style.setProperty('--tile-size', `${size}px`);
+});
+
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+fullscreenBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    fullscreenBtn.textContent = '❎ Keluar Fullscreen';
+  } else {
+    document.exitFullscreen();
+    fullscreenBtn.textContent = '🔳 Fullscreen';
+  }
 });
 
 
