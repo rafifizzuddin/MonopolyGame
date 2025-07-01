@@ -7,11 +7,30 @@
   <style>
     body {
       display: flex;
+      flex-direction: row;
       font-family: sans-serif;
       background: #f5f5f5;
       margin: 0;
       padding: 0;
     }
+
+    body.mobile-mode {
+    flex-direction: column;
+    }
+
+    body.mobile-mode #sidebar {
+    width: 100%;
+    max-width: 500px;
+    order: 2;
+    margin: 10px auto;
+    }
+
+
+    body.mobile-mode #game-board {
+    order: 1;
+    margin: 10px auto;
+    }
+
     #game-board {
     display: grid;
     grid-template-columns: repeat(11, var(--tile-size, 60px));
@@ -121,7 +140,7 @@
 <body>
 
     <div id="header">
-        <h1>🎲 Monopoli Web - v1.16</h1>
+        <h1>🎲 Monopoli Web - v1.18</h1>
         <label for="board-size">Ukuran Petak: </label>
             <select id="board-size">
                 <option value="50">Kecil</option>
@@ -132,6 +151,8 @@
         <br>
         <br>
         <button id="fullscreen-btn">🔳 Fullscreen</button>
+        <br><br>
+        <button id="toggle-layout-btn">🔄 Ganti Tata Letak</button>
     </div>
 
   <div id="game-board"></div>
@@ -496,6 +517,15 @@ fullscreenBtn.addEventListener('click', () => {
   }
 });
 
+const toggleLayoutBtn = document.getElementById('toggle-layout-btn');
+toggleLayoutBtn.addEventListener('click', () => {
+  document.body.classList.toggle('mobile-mode');
+  if (document.body.classList.contains('mobile-mode')) {
+    toggleLayoutBtn.textContent = '🔄 Mode Desktop';
+  } else {
+    toggleLayoutBtn.textContent = '🔄 Mode Mobile';
+  }
+});
 
 </script>
 </body>
